@@ -903,40 +903,56 @@ function startJourney(personaId){
     document.getElementById('submitDiaryBtn').onclick = submitDiary;
 
     function submitDiary(){
-      const GOOGLE_SHEET_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwy1v1bsLQF_29uusuRdcsxRkrfwAl3jckOJu63Xgm9-eFbHP_-6etnn03Tl5iojkba-w/exec';
-      const num = document.getElementById('studentNumber').value.trim();
-      const name = document.getElementById('studentName').value.trim();
-      const group = document.getElementById('studentGroup').value;
-      const diary = document.getElementById('diaryText').value.trim();
-      const status = document.getElementById('submitStatus');
+const GOOGLE_APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwy1v1bsLQF_29uusuRdcsxRkrfwA13jck0Ju63Xgm9-eFbHP_-6etnn03T15iojkba-w/exec';
+  
+  const num = document.getElementById('studentNumber').value.trim();
+  const name = document.getElementById('studentName').value.trim();
+  const group = document.getElementById('studentGroup').value;
+  const diary = document.getElementById('diaryText').value.trim();
+  const status = document.getElementById('submitStatus');
 
-      if(!group){ status.textContent = '모둠을 선택해주세요.'; status.className='submit-status warn'; return; }
-      if(!num || !name){ status.textContent = '번호·이름을 모두 입력해주세요.'; status.className='submit-status warn'; return; }
-      if(diary.length < 10){ status.textContent = '소감문을 조금 더 작성해주세요.'; status.className='submit-status warn'; return; }
-      if(!GOOGLE_SHEET_SCRIPT_URL){ status.textContent = '아직 구글 시트 연결 주소가 설정되지 않았습니다.'; status.className='submit-status warn'; return; }
+  // 1. 필수 입력값 검사
+  if(!group){ status.textContent = '모둠을 선택해주세요.'; status.className='submit-status warn'; return; }
+  if(!num || !name){ status.textContent = '번호·이름을 모두 입력해주세요.'; status.className='submit-status warn'; return; }
+  if(diary.length < 10){ status.textContent = '소감문을 조금 더 작성해주세요.'; status.className='submit-status warn'; return; }
 
-      status.textContent = '제출 중…'; status.className = 'submit-status';
-      const studentCode = `${group} ${num}번 ${name}`;
-      const mentionedLaws = LAWS.filter(l => diary.includes(l.title)).map(l=>l.title).join(',');
-      const body = new URLSearchParams({
-        studentCode: studentCode,
-        group: group,
-        persona: persona.name + ' · ' + persona.role,
-        diary: diary,
-        laws: mentionedLaws
-      });
+  status.textContent = '제출 중…'; status.className = 'submit-status';
 
-      fetch(GOOGLE_SHEET_SCRIPT_URL, { method:'POST', mode:'no-cors', body: body })
-        .then(()=>{
-          status.textContent = '제출되었습니다. 선생님께 전달되었어요.';
-          status.className = 'submit-status ok';
-          document.getElementById('submitDiaryBtn').disabled = true;
-        })
-        .catch(()=>{
-          status.textContent = '제출에 실패했습니다. 인터넷 연결을 확인해주세요.';
-          status.className = 'submit-status warn';
-        });
-    }
+  // 2. 현재 선택된 인물(페르소나) 이름 가져오기
+  let personaName = "선택 인물 없음";
+  if (typeof persona !== 'undefined' && persona && persona.name) {
+    personaName = persona.name + (persona.role ? ' · ' + persona.role : '');
+  } else if (typeof selectedPersonaId !== 'undefined' && typeof PERSONAS !== 'undefined') {
+    const p = PERSONAS.find(x => x.id === selectedPersonaId);
+    if (p) personaName = p.name + ' · ' + p.role;
+  }
+
+  // 3. 구글 시트 칼럼(B:조, C:번호, D:이름, E:선택한 인물, F:소감문) 구조에 맞게 데이터 생성
+  const body = new URLSearchParams({
+    group: group,
+    number: num,
+    name: name,
+    persona: personaName,
+    diary: diary
+  });
+
+  // 4. 구글 시트로 전송
+  fetch(GOOGLE_APP_SCRIPT_URL, { 
+    method: 'POST', 
+    mode: 'no-cors', 
+    body: body 
+  })
+  .then(()=>{
+    status.textContent = '제출되었습니다! 선생님께 전달되었어요. ✨';
+    status.className = 'submit-status ok';
+    document.getElementById('submitDiaryBtn').disabled = true;
+  })
+  .catch((err)=>{
+    console.error('제출 오류:', err);
+    status.textContent = '제출에 실패했습니다. 인터넷 연결을 확인해주세요.';
+    status.className = 'submit-status warn';
+  });
+}
 
     const disclaimer = document.createElement('div');
     disclaimer.className = 'disclaimer';
