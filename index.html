@@ -1055,16 +1055,16 @@ function loadFeedbacks() {
         const card = document.createElement('div');
         const randomColor = colors[index % colors.length];
 
-        // 구글 시트 구조 반영 (B:조, D:이름, E:선택한 인물, F:소감문)
-        // 객체 키(Key) 또는 배열 순서 인덱스 자동 감지
-        const group = item.조 || item[1] || '';
-        const name = item.이름 || item[3] || '익명';
-        const persona = item['선택한 인물'] || item.선택 || item[4] || '';
-        const content = item.소감문 || item.소감 || item[5] || (typeof item === 'object' ? Object.values(item)[5] || Object.values(item)[1] : '') || '';
+       // 구글 시트 구조 반영 (B:조, D:이름, E:선택한 인물, F:소감문)
+// 객체 키(Key) 또는 배열 순서 인덱스 자동 감지
+const group = item.조 || item['조'] || item[1] || '';
+const name = item.이름 || item['이름'] || item[3] || '익명';
+const persona = item['선택한 인물'] || item.선택한인물 || item.선택 || item[4] || '';
+const content = item.소감문 || item.소감 || item[5] || (typeof item === 'object' ? Object.values(item)[5] : '') || '';
 
-        // 작성자 표시 텍스트 생성: "1조 홍길동 · 정민호" 형식
-        const userInfo = `${group} ${name}`.trim();
-        const footerText = persona ? `${userInfo} · ${persona}` : userInfo;
+// 작성자 표시 텍스트 생성: "1조 홍길동 · 정민호" 형식
+const userInfo = `${group} ${name}`.trim();
+const footerText = persona ? `${userInfo} · ${persona}` : userInfo;
 
         // 포스트잇 디자인 설정
         card.style.backgroundColor = randomColor;
