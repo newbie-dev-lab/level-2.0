@@ -1055,14 +1055,27 @@ function loadFeedbacks() {
         const card = document.createElement('div');
         const randomColor = colors[index % colors.length];
 
-       // 구글 시트 구조 반영 (B:조, D:이름, E:선택한 인물, F:소감문)
-// 객체 키(Key) 또는 배열 순서 인덱스 자동 감지
-const group = item.조 || item['조'] || item[1] || '';
-const name = item.이름 || item['이름'] || item[3] || '익명';
-const persona = item['선택한 인물'] || item.선택한인물 || item.선택 || item[4] || '';
-const content = item.소감문 || item.소감 || item[5] || (typeof item === 'object' ? Object.values(item)[5] : '') || '';
+// 시트 데이터 구조 자동 감지 로직
+let group = item.조 || item['조'] || '';
+let name = item.이름 || item['이름'] || '';
+let persona = item['선택한 인물'] || item.선택한인물 || item.선택 || '';
+let content = item.소감문 || item.소감 || '';
 
-// 작성자 표시 텍스트 생성: "1조 홍길동 · 정민호" 형식
+// 배열 또는 객체의 values 배열 추출
+const row = Array.isArray(item) ? item : Object.values(item);
+
+// 키로 찾지 못했을 때 인덱스로 차례대로 fallback
+if (!group && row[1] !== undefined) group = String(row[1]);
+if (!name) {
+  // 3번, 2번, 1번 인덱스 중 텍스트가 있는 곳 탐색
+  name = row[3] || row[2] || row[1] || '익명';
+}
+if (!persona && row[4] !== undefined) persona = String(row[4]);
+if (!content) {
+  content = row[5] || (row.length > 0 ? row[row.length - 1] : '') || '';
+}
+
+// 작성자 표시 텍스트 생성
 const userInfo = `${group} ${name}`.trim();
 const footerText = persona ? `${userInfo} · ${persona}` : userInfo;
 
